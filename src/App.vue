@@ -1,18 +1,36 @@
 <script setup>
-import { ref } from "vue";
+import { ref } from 'vue'
 
-const showModal = ref(false);
-const newNote = ref("")
+const showModal = ref(false)
+const newNote = ref('')
+const notes = ref([])
+
+function randomColor() {
+  return 'hsl(' + Math.random() * 360 + ', 100%, 75%)'
+}
+
+const addNote = () => {
+  return (
+    notes.value.push({
+      id: Math.floor(Math.random() * 100000),
+      text: newNote.value,
+      date: new Date(),
+      backgroundColor: randomColor()
+    }),
+    (showModal.value = false),
+    (newNote.value = '')
+  )
+}
 </script>
 
 <template>
   <main>
-    <div v-if="showModal" class="overlay" @click="showModal=false">
+    <div v-if="showModal" class="overlay">
       <div class="modal">
         <textarea name="note" id="note" cols="30" rows="10" v-model="newNote"></textarea>
-        <button class="btnSubmit"> > </button>
+        <button class="btnSubmit" @click="addNote">></button>
       </div>
-      <button class="close" @click="showModal=false">X</button>
+      <button class="close" @click="showModal = false">X</button>
     </div>
     <div class="container">
       <header id="head">
@@ -20,9 +38,16 @@ const newNote = ref("")
         <button id="btnAdd" @click="showModal = true">+</button>
       </header>
       <div class="cards_container">
-        <div class="cards">
-          <p class="main_text"></p>
-          <p class="date"></p>
+        
+        <div
+          v-for="note in notes"
+          :key="note.id"
+          class="cards"
+          :style="{ backgroundColor: note.backgroundColor }"
+        >
+       <font-awesome-icon :icon="['fas', 'trash']" class="trash"/>
+          <p class="main_text" style="color: black">{{ note.text }}</p>
+          <p class="date" style="color: black">{{ note.date }}</p>
         </div>
       </div>
     </div>
@@ -81,16 +106,24 @@ main {
   justify-content: space-evenly;
   margin: 5px;
   padding: 6px;
-  background: black;
+  background-color: black;
 }
 
 .main_text {
   color: whitesmoke;
 }
 
+.trash{
+  transition: 0.2s ease;
+}
+
+.trash:hover{
+  color: red;
+  font-size: large;
+}
 .date {
   color: whitesmoke;
-  font-size: 18px;
+  font-size: 0.8rem;
   font-weight: bold;
 }
 
@@ -150,7 +183,7 @@ main {
 
 .btnSubmit:hover {
   transform: scale(1);
-  background: rgb(193, 244, 193);
+  background: rgb(193, 204, 244);
   box-shadow: none;
 }
 
