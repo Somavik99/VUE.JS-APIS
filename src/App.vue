@@ -1,33 +1,62 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
+const localStorageValue = ref('')
 const showModal = ref(false)
 const newNote = ref('')
 const notes = ref([])
+const errorMessage = ref('')
+
 
 function randomColor() {
   return 'hsl(' + Math.random() * 360 + ', 100%, 75%)'
 }
 
 const addNote = () => {
+  if (newNote.value.length < 10) {
+    return (errorMessage.value = 'Enter at least 10 character')
+  }
   return (
     notes.value.push({
       id: Math.floor(Math.random() * 100000),
       text: newNote.value,
       date: new Date(),
-      backgroundColor: randomColor()
+      backgroundColor: randomColor(),
+     
     }),
     (showModal.value = false),
-    (newNote.value = '')
+    (newNote.value = ' '),
+    (errorMessage.value = ''),
+    localStorage.setItem('note',JSON.stringify(notes.value))
+  
   )
 }
+
+onMounted(()=>{
+  localStorageValue.value =JSON.parse( localStorage.getItem('note'))
+})
+
+const DeleteCard = ()=>{
+  notes.value.pop({
+    id: Math.floor(Math.random() * 100000),
+      text: newNote.value,
+      date: new Date(),
+      backgroundColor: randomColor()
+  })
+}
+
+
 </script>
 
 <template>
   <main>
     <div v-if="showModal" class="overlay">
       <div class="modal">
-        <textarea name="note" id="note" cols="30" rows="10" v-model="newNote"></textarea>
+        <textarea name="note" id="note" cols="30" rows="10" v-model.trim="newNote"> </textarea>
+        <p v-if="errorMessage" style="color: red">
+          {{ errorMessage }}
+        </p>
+
         <button class="btnSubmit" @click="addNote">></button>
       </div>
       <button class="close" @click="showModal = false">X</button>
@@ -38,16 +67,15 @@ const addNote = () => {
         <button id="btnAdd" @click="showModal = true">+</button>
       </header>
       <div class="cards_container">
-        
         <div
           v-for="note in notes"
           :key="note.id"
           class="cards"
           :style="{ backgroundColor: note.backgroundColor }"
         >
-       <font-awesome-icon :icon="['fas', 'trash']" class="trash"/>
+          <font-awesome-icon :icon="['fas', 'trash']" class="trash" @click="DeleteCard"  />
           <p class="main_text" style="color: black">{{ note.text }}</p>
-          <p class="date" style="color: black">{{ note.date }}</p>
+          <p class="date" style="color: black">{{ note.date.toLocaleDateString('en-US') }}</p>
         </div>
       </div>
     </div>
@@ -63,8 +91,12 @@ main {
   color: rgb(250, 244, 234);
   border-radius: 2em;
   box-shadow: 2rem 2rem 2rem rgba(0, 0, 0, 0.478);
+  overflow-y: scroll;
 }
 
+main::-webkit-scrollbar {
+  margin: 5px;
+}
 .container {
   /* max-width: 500px; */
   padding: 10px;
@@ -113,14 +145,15 @@ main {
   color: whitesmoke;
 }
 
-.trash{
+.trash {
   transition: 0.2s ease;
 }
 
-.trash:hover{
+.trash:hover {
   color: red;
   font-size: large;
 }
+
 .date {
   color: whitesmoke;
   font-size: 0.8rem;
@@ -160,11 +193,17 @@ main {
   border: none;
   outline: none;
   margin: 3px;
+  display: flex;
+  flex-wrap: wrap;
   margin-bottom: 6px;
   border-radius: 8px;
   padding: 6px;
   font-size: 15px;
   font-family: 'Delicious Handrawn', cursive;
+}
+
+#dT {
+  margin-top: 22%;
 }
 
 .btnSubmit {
